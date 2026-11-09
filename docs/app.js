@@ -2,8 +2,10 @@
  * Pagina's (via de #-link, zodat je ze kunt delen of als bladwijzer kunt bewaren):
  *   #/                     startpagina met de groepen
  *   #/groep/5              groep 5, deze week en de komende weken
- *   #/groep/5/week/12      groep 5, vanaf lesweek 12
- *   #/bord/5/12/3          nakijken op het digibord: groep 5, lesweek 12, dag 3 (woensdag)
+ *   #/groep/5/week/48      groep 5, vanaf week 48
+ *   #/bord/5/48/3          nakijken op het digibord: groep 5, week 48, dag 3 (woensdag)
+ * Weeknummers zijn de weken van de kalender (zoals in de agenda). Intern telt de generator lesweken 1–40;
+ * de kalender (data/kalender.json) koppelt die aan de weeknummers ("kw").
  * Gegevens: data/kalender.json (schoolweken) en data/groepN.json + groepN/weekNN.json (gemaakt door generator/bouw.py).
  */
 "use strict";
@@ -55,6 +57,10 @@ async function json(url) {
 // ---------- kalender ----------
 function lesweken() { return kalender.weken.filter((w) => w.lesweek); }
 function weekVan(n) { return kalender.weken.find((w) => w.lesweek === n); }
+function kwVan(n) { return weekVan(n).kw; }
+/** Weeknummer van de kalender -> lesweek (of null als die week geen blad heeft). */
+function lesVanKw(kw) { const w = kalender.weken.find((x) => x.lesweek && x.kw === kw); return w ? w.lesweek : null; }
+function bestand(g, n) { return `groep${g}/week${pad(kwVan(n))}`; }
 
 /** De lesweek van vandaag. In een vakantie of weekend: de eerstvolgende lesweek. */
 function huidig() {
@@ -109,7 +115,7 @@ async function toonStart() {
     try { const d = await json(`data/groep${g}.json`); thema = (d.weken.find((w) => w.week === h.lesweek) || {}).thema || ""; } catch (e) { /* nog niet gebouwd */ }
     return `<a class="tegel ${g === laatst ? "laatst" : ""}" href="#/groep/${g}">
       <div class="nr">${g}</div><div class="lbl">Groep ${g}</div>
-      <div class="nu">${h.bezig ? "Deze week" : "Volgende week"}: lesweek ${h.lesweek}${thema ? `<br>${esc(thema)}` : ""}</div></a>`;
+      <div class="nu">${h.bezig ? "Deze week" : "Volgende week"}: week ${kwVan(h.lesweek)}${thema ? `<br>${esc(thema)}` : ""}</div></a>`;
   }));
   app.innerHTML = `
     <section class="intro">
@@ -146,21 +152,21 @@ async function toonGroep(g, vanaf) {
 
   const kaarten = blok.map((w) => {
     if (!w.lesweek) {
-      return `<div class="vakantie"><span>${esc(w.naam)}</span><span>${bereik(w)}</span></div>`;
+      return `<div class="vakantie"><span>${esc(w.naam)}</span><span>week ${w.kw} · ${bereik(w)}</span></div>`;
     }
     const info = data.weken.find((x) => x.week === w.lesweek);
     const isNu = w.lesweek === h.lesweek;
     const groot = isNu ? "groot" : "";
     const lab = isNu ? `<span class="label">${h.bezig ? "DEZE WEEK" : "VOLGENDE WEEK"}</span>` : "";
     const vrij = (w.vrije_dagen || []).map((v) => `${esc(v.naam)} (${DAG_KORT[datum(v.datum).getDay() - 1] || ""} ${kortDatum(v.datum)})`).join(", ");
-    const map = `groep${g}/week${pad(w.lesweek)}`;
+    const map = bestand(g, w.lesweek);
     if (!info) {
-      return `<article class="week"><div><h2>${lab}Lesweek ${w.lesweek}</h2><div class="datum">${bereik(w)}</div>
+      return `<article class="week"><div><h2>${lab}Week ${w.kw}</h2><div class="datum">${bereik(w)}</div>
         <p class="thema">Dit blad is nog niet klaar.</p></div></article>`;
     }
     return `<article class="week ${isNu ? "nu" : ""} ${groot}">
       <div>
-        <h2>${lab}Lesweek ${w.lesweek} <span class="datum">· ${bereik(w)}</span></h2>
+        <h2>${lab}Week ${w.kw} <span class="datum">· ${bereik(w)}</span></h2>
         <p class="thema">${esc(info.thema)}</p>
         <div class="focus">${info.focus.map((f) => `<span>${f}</span>`).join("")}</div>
         ${vrij ? `<div class="vrij">Vrij: ${vrij}. Er blijft een strookje over (extra herhaling).</div>` : ""}
@@ -168,22 +174,22 @@ async function toonGroep(g, vanaf) {
       <div class="acties">
         <a class="knop primair" href="${map}.pdf" target="_blank" rel="noopener">Werkblad (PDF)</a>
         <a class="knop" href="${map}-antwoorden.pdf" target="_blank" rel="noopener">Antwoorden (PDF)</a>
-        <a class="knop groen" href="#/bord/${g}/${w.lesweek}/${standaardDag(w.lesweek)}">Nakijken op het digibord</a>
+        <a class="knop groen" href="#/bord/${g}/${w.kw}/${standaardDag(w.lesweek)}">Nakijken op het digibord</a>
       </div>
     </article>`;
   });
 
-  const opties = lesweken().map((w) => `<option value="${w.lesweek}" ${w.lesweek === start ? "selected" : ""}>Lesweek ${w.lesweek} · ${bereik(w)}</option>`).join("");
+  const opties = lesweken().map((w) => `<option value="${w.lesweek}" ${w.lesweek === start ? "selected" : ""}>Week ${w.kw} · ${bereik(w)}</option>`).join("");
   app.innerHTML = `
     <div class="kop-groep">
-      <div><h1>Groep ${g}</h1><div class="sub">${h.bezig ? "Deze week" : "Volgende week"}: lesweek ${h.lesweek} (${bereik(h.week)})</div></div>
+      <div><h1>Groep ${g}</h1><div class="sub">${h.bezig ? "Deze week" : "Volgende week"}: week ${h.week.kw} (${bereik(h.week)})</div></div>
     </div>
     ${vak && !vanaf ? `<p class="melding">Het is nu ${vak === "zomer" ? "zomervakantie" : esc(vak.toLowerCase())}. Bovenaan staat de eerste week na de vakantie.</p>` : ""}
     <div class="bladeren">
       <button class="knop" id="eerder" ${start <= 1 ? "disabled" : ""}>← Eerdere weken</button>
       <button class="knop" id="nu" ${start === h.lesweek ? "disabled" : ""}>Deze week</button>
       <button class="knop" id="later" ${eind >= 40 ? "disabled" : ""}>Latere weken →</button>
-      <select class="knop" id="kies" aria-label="Ga naar lesweek">${opties}</select>
+      <select class="knop" id="kies" aria-label="Ga naar week">${opties}</select>
     </div>
     <section class="weken">${kaarten.join("")}</section>
     <section class="jaar">
@@ -195,7 +201,7 @@ async function toonGroep(g, vanaf) {
       </div>
     </section>`;
 
-  const naar = (n) => { location.hash = n === h.lesweek ? `#/groep/${g}` : `#/groep/${g}/week/${n}`; };
+  const naar = (n) => { location.hash = n === h.lesweek ? `#/groep/${g}` : `#/groep/${g}/week/${kwVan(n)}`; };
   document.getElementById("eerder").onclick = () => naar(Math.max(1, start - VENSTER));
   document.getElementById("later").onclick = () => naar(Math.min(40, start + VENSTER));
   document.getElementById("nu").onclick = () => naar(h.lesweek);
@@ -211,10 +217,10 @@ async function toonBord(g, n, dag) {
   n = Math.min(Math.max(n, 1), 40);
   dag = Math.min(Math.max(dag, 1), 5);
   const w = weekVan(n);
-  const meta = await json(`groep${g}/week${pad(n)}.json`);
+  const meta = await json(`${bestand(g, n)}.json`);
   const dd = meta.dagen[dag - 1];
   const datumDag = plusDagen(w.maandag, dag - 1);
-  document.title = `Nakijken groep ${g} – week ${n} ${DAGEN[dag - 1]}`;
+  document.title = `Nakijken groep ${g} – week ${w.kw} ${DAGEN[dag - 1]}`;
   const vrijeDatums = new Set((w.vrije_dagen || []).map((v) => v.datum));
 
   const tabs = DAGEN.map((naam, i) => {
@@ -236,13 +242,13 @@ async function toonBord(g, n, dag) {
   app.innerHTML = `
     <div class="bordkop">
       <div>
-        <h1>Groep ${g} · Lesweek ${n} · ${DAGEN[dag - 1]} ${kortDatum(datumDag)}</h1>
+        <h1>Groep ${g} · Week ${w.kw} · ${DAGEN[dag - 1]} ${kortDatum(datumDag)}</h1>
         <div class="sub">${esc(meta.thema)}</div>
       </div>
       <div class="dagen" role="tablist">${tabs}</div>
     </div>
     <div class="strook" id="strook">
-      <img src="groep${g}/week${pad(n)}-dag${dag}.png" alt="Strook met antwoorden, ${DAGEN[dag - 1]} lesweek ${n}">
+      <img src="${bestand(g, n)}-dag${dag}.png" alt="Strook met antwoorden, ${DAGEN[dag - 1]} week ${w.kw}">
       ${dekkingen}
     </div>
     <div class="bordknoppen">
@@ -252,7 +258,7 @@ async function toonBord(g, n, dag) {
       <button class="knop" id="vorigeDag">← Vorige dag</button>
       <button class="knop" id="volgendeDag">Volgende dag →</button>
       <button class="knop" id="scherm">Volledig scherm</button>
-      <a class="knop" href="#/groep/${g}/week/${n}">Terug</a>
+      <a class="knop" href="#/groep/${g}/week/${w.kw}">Terug</a>
     </div>
     <p class="tip">Tik op een geel vakje om het antwoord te zien. Toetsen: spatie = volgend antwoord, A = alles tonen, V = alles verbergen, ←/→ = vorige/volgende dag.</p>
     <details class="tekstantw"><summary>Antwoorden als tekst</summary><ol>${dd.antwoorden.map((a) => `<li>${esc(a)}</li>`).join("")}</ol></details>`;
@@ -268,9 +274,9 @@ async function toonBord(g, n, dag) {
     let nn = n, d2 = dag + stap;
     if (d2 < 1) { if (nn > 1) { nn--; d2 = 5; } else d2 = 1; }
     if (d2 > 5) { if (nn < 40) { nn++; d2 = 1; } else d2 = 5; }
-    location.hash = `#/bord/${g}/${nn}/${d2}`;
+    location.hash = `#/bord/${g}/${kwVan(nn)}/${d2}`;
   };
-  app.querySelectorAll(".dagen button").forEach((b) => { b.onclick = () => { location.hash = `#/bord/${g}/${n}/${b.dataset.dag}`; }; });
+  app.querySelectorAll(".dagen button").forEach((b) => { b.onclick = () => { location.hash = `#/bord/${g}/${w.kw}/${b.dataset.dag}`; }; });
   document.getElementById("volgende").onclick = volgende;
   document.getElementById("alles").onclick = () => alles(true);
   document.getElementById("verberg").onclick = () => alles(false);
@@ -299,9 +305,9 @@ async function route() {
   try {
     if (!kalender) { kalender = await json("data/kalender.json"); zetVoet(); }
     if (p[0] === "groep" && GROEPEN.includes(Number(p[1]))) {
-      await toonGroep(Number(p[1]), p[2] === "week" ? Number(p[3]) : null);
+      await toonGroep(Number(p[1]), p[2] === "week" ? lesVanKw(Number(p[3])) : null);
     } else if (p[0] === "bord" && GROEPEN.includes(Number(p[1]))) {
-      await toonBord(Number(p[1]), Number(p[2]) || huidig().lesweek, Number(p[3]) || 1);
+      await toonBord(Number(p[1]), lesVanKw(Number(p[2])) || huidig().lesweek, Number(p[3]) || 1);
     } else {
       await toonStart();
     }

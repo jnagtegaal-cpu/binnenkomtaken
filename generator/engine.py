@@ -535,7 +535,20 @@ def cutlines(c):
     c.setFillColor(black)
 
 
-def overview(c, group, plan, types, intro):
+def week_label(labels, a, b=None):
+    """Kalenderweek(en) voor lesweek a (t/m b): '46', '45–46' of '50, 1' (met vakantie ertussen)."""
+    if not labels:
+        return f"{a}" if b is None else f"{a}–{b}"
+    la = labels[a]
+    if b is None or b == a:
+        return str(la)
+    lb = labels[b]
+    if b - a == 1:
+        return f"{la}–{lb}" if lb == la + 1 else f"{la}, {lb}"
+    return f"{la}–{lb}"
+
+
+def overview(c, group, plan, types, intro, labels=None):
     c.setFont(FONTB, 18); c.setFillColor(ACCENT)
     c.drawString(20 * mm, H - 25 * mm, f"Binnenkomtaken {group.lower()} – jaaroverzicht")
     c.setFillColor(black)
@@ -552,7 +565,7 @@ def overview(c, group, plan, types, intro):
     y -= 2 * mm
     for (a, b), title, focus, herh in plan:
         sup = lambda t_: t_.replace("³", "<super>3</super>").replace("²", "<super>2</super>")
-        cells = [(20, 12, f"{a}–{b}"), (33, 38, sup(title)),
+        cells = [(20, 12, week_label(labels, a, b)), (33, 38, sup(title)),
                  (73, 73, sup(", ".join(types[t][1] for t in focus))),
                  (148, 47, sup(", ".join(types[t][1] for t in herh)) or "–")]
         ps = []
@@ -576,21 +589,23 @@ def week_rng(group, week, versie=1):
     return random.Random(f"binnenkomtaken|{group}|week{week}|v{versie}")
 
 
-def build_week(outdir, group, plan, types, week, versie=1):
-    """Bouwt voor één week: leerlingblad (PDF), antwoordblad (PDF), antwoordstroken per dag (PNG) en week.json."""
+def build_week(outdir, group, plan, types, week, versie=1, label=None):
+    """Bouwt voor één week: leerlingblad (PDF), antwoordblad (PDF), antwoordstroken per dag (PNG) en week.json.
+    week = lesweek (1-40; bepaalt plan en willekeur), label = kalenderweek (staat op het blad en in de bestandsnaam)."""
+    label = label or week
     import os, json, subprocess, tempfile
     from PIL import Image
     os.makedirs(outdir, exist_ok=True)
     rng = week_rng(group, week, versie)
     title = plan_for(plan, week)[0]
     days = [strip_items(rng, plan, types, week) for _ in range(5)]
-    base = os.path.join(outdir, f"week{week:02d}")
+    base = os.path.join(outdir, f"week{label:02d}")
     for answers, path in ((False, base + ".pdf"), (True, base + "-antwoorden.pdf")):
         c = canvas.Canvas(path, pagesize=A4)
-        c.setTitle(f"Binnenkomtaken {group.lower()} week {week}" + (" – antwoorden" if answers else ""))
+        c.setTitle(f"Binnenkomtaken {group.lower()} week {label}" + (" – antwoorden" if answers else ""))
         cutlines(c)
         for d in range(5):
-            draw_strip(c, H - (d + 1) * STRIP_H, week, DAYS[d], group, title, days[d], answers=answers)
+            draw_strip(c, H - (d + 1) * STRIP_H, label, DAYS[d], group, title, days[d], answers=answers)
         c.showPage(); c.save()
     # antwoordstroken als afbeelding (voor het digibord)
     dpi = 170
@@ -604,7 +619,7 @@ def build_week(outdir, group, plan, types, week, versie=1):
         strip = strip.quantize(colors=48, method=Image.Quantize.MEDIANCUT)
         strip.save(f"{base}-dag{d + 1}.png", optimize=True)
     meta = {
-        "week": week, "thema": title, "versie": versie,
+        "week": week, "kalenderweek": label, "thema": title, "versie": versie,
         "dagen": [{"dag": DAYS[d], "antwoorden": [answer_text(it) for it in days[d]],
                    "vakjes": [(it.rects if (it.rects and not it.ans_draw) else [it.cell]) for it in days[d]]}
                   for d in range(5)],
@@ -614,17 +629,18 @@ def build_week(outdir, group, plan, types, week, versie=1):
     return meta
 
 
-def build_year_pdfs(outdir, group, plan, types, intro, slug):
+def build_year_pdfs(outdir, group, plan, types, intro, slug, labels=None):
     """Plakt de weekbladen samen tot één jaar-PDF (met jaaroverzicht) en één antwoorden-PDF."""
     import os, tempfile
     from pypdf import PdfWriter, PdfReader
     with tempfile.TemporaryDirectory() as td:
         ov = os.path.join(td, "overzicht.pdf")
-        c = canvas.Canvas(ov, pagesize=A4); overview(c, group, plan, types, intro); c.showPage(); c.save()
+        c = canvas.Canvas(ov, pagesize=A4); overview(c, group, plan, types, intro, labels); c.showPage(); c.save()
         for suffix, out in (("", f"{slug}-heel-jaar.pdf"), ("-antwoorden", f"{slug}-antwoorden-heel-jaar.pdf")):
             w = PdfWriter()
             for week in range(1, 41):
-                for p in PdfReader(os.path.join(outdir, f"week{week:02d}{suffix}.pdf")).pages:
+                lab = labels[week] if labels else week
+                for p in PdfReader(os.path.join(outdir, f"week{lab:02d}{suffix}.pdf")).pages:
                     w.add_page(p)
             for p in PdfReader(ov).pages:
                 w.add_page(p)

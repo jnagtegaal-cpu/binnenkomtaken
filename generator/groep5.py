@@ -352,11 +352,11 @@ PLAN = [
 ]
 
 INTRO = (
-    "Eén pagina per week: <b>paginanummer = weeknummer</b>. Print per week zoveel pagina's als er leerlingen zijn, "
+    "Eén pagina per schoolweek; bovenaan staat het <b>weeknummer van de kalender</b>. Print per week zoveel pagina's als er leerlingen zijn, "
     "snijd langs de stippellijnen en leg per dag een stapeltje klaar. Elke strook heeft 10 opdrachten (± 5 minuten): "
     "ongeveer 7 over de focus van de week en 3 herhalingsopdrachten.<br/>"
-    "Rekenmuurtje: blok 2/4/6/8 = week 8/16/24/32. Week 1–2: herhaling groep 4. <b>Rekenen tot 100 uit het hoofd (35 + 27 / 73 – 45) komt het hele "
-    "jaar terug</b> (in de lijn alleen in blok 2). Week 33–40 zijn extra: tot 100 en 1000, alle (deel)tafels vlot. "
+    "Rekenmuurtje: blok 2/4/6/8 = {w:8}, {w:16}, {w:24} en {w:32}. {W:1-2}: herhaling groep 4. <b>Rekenen tot 100 uit het hoofd (35 + 27 / 73 – 45) komt het hele "
+    "jaar terug</b> (in de lijn alleen in blok 2). {W:33-40} zijn extra: tot 100 en 1000, alle (deel)tafels vlot. "
     "Bij de klok met wijzers schrijven kinderen de digitale tijd op (uur : minuten); bij <i>teken de wijzers</i> "
     "tekenen ze de wijzers in de lege klok. Het beelddiagram zit er niet in (past niet op een strook)."
 )

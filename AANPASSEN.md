@@ -14,7 +14,7 @@ Zo kloppen de antwoorden op het digibord altijd met wat je al geprint hebt.
 - "De bladen van groep 4 zijn te moeilijk. Maak ze vanaf volgende week makkelijker: minder sommen over het tiental."
 - "Ik wil in groep 6 en 7 elke dag minstens drie tafelsommen."
 - "In groep 5 komt de klok te weinig terug. Zet hem vanaf nu om de week in de herhaling."
-- "Groep 8 week 22 wil ik met andere getallen."
+- "Groep 8 week 6 wil ik met andere getallen."
 - "We hebben op vrijdag 12 maart een studiedag."
 - "Laat in groep 3 de getallenlijn weg en doe meer splitsen."
 - "Voeg voor groep 7 een week extra herhaling van breuken toe vóór de kerstvakantie."

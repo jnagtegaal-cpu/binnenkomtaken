@@ -569,10 +569,10 @@ PLAN = [
 ]
 
 INTRO = (
-    "Eén pagina per week: <b>paginanummer = weeknummer</b>. Print per week zoveel pagina's als er leerlingen zijn, "
+    "Eén pagina per schoolweek; bovenaan staat het <b>weeknummer van de kalender</b>. Print per week zoveel pagina's als er leerlingen zijn, "
     "snijd langs de stippellijnen en leg per dag een stapeltje klaar. Elke strook: 10 opdrachten (± 5 minuten), "
-    "ongeveer 7 focus en 3 herhaling. Rekenmuurtje: blok 2/4/6/8 = week 8/16/24/32. Week 1–2: herhaling groep 5. "
+    "ongeveer 7 focus en 3 herhaling. Rekenmuurtje: blok 2/4/6/8 = {w:8}, {w:16}, {w:24} en {w:32}. {W:1-2}: herhaling groep 5. "
     "<b>Rekenen tot 100 uit het hoofd (35 + 27 / 73 – 45) blijft het hele jaar terugkomen.</b> "
-    "Week 33–40 zijn extra. Tijden schrijven kinderen digitaal op (uur : minuten); bij <i>'s middags</i> in 24-uursnotatie. "
+    "{W:33-40} zijn extra. Tijden schrijven kinderen digitaal op (uur : minuten); bij <i>'s middags</i> in 24-uursnotatie. "
     "Grote getallen staan met een spatie (45 000), zoals in de methode."
 )

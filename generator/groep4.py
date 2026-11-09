@@ -316,12 +316,12 @@ PLAN = [
 ]
 
 INTRO = (
-    "Eén pagina per week: <b>paginanummer = weeknummer</b>. Print per week zoveel pagina's als er leerlingen zijn, "
+    "Eén pagina per schoolweek; bovenaan staat het <b>weeknummer van de kalender</b>. Print per week zoveel pagina's als er leerlingen zijn, "
     "snijd langs de stippellijnen en leg per dag een stapeltje klaar. Elke strook heeft 10 opdrachten (± 5 minuten): "
     "ongeveer 7 over de focus van de week en 3 herhalingsopdrachten.<br/>"
-    "Aansluiting op het Rekenmuurtje: blok 2 = week 8, blok 4 = week 16, blok 6 = week 24, blok 8 = week 32. "
-    "Week 1–2 starten met herhaling van groep 3. Sommen tot 20 (6 + 8 / 14 – 8) komen het hele jaar terug. "
-    "Week 33–40 zijn extra: veel oefening met rekenen tot 100 (35 + 28 en 74 – 38) en de tafels door elkaar, "
+    "Aansluiting op het Rekenmuurtje: blok 2 = {w:8}, blok 4 = {w:16}, blok 6 = {w:24}, blok 8 = {w:32}. "
+    "{W:1-2} starten met herhaling van groep 3. Sommen tot 20 (6 + 8 / 14 – 8) komen het hele jaar terug. "
+    "{W:33-40} zijn extra: veel oefening met rekenen tot 100 (35 + 28 en 74 – 38) en de tafels door elkaar, "
     "zodat dit stevig staat vóór groep 5. "
     "De lege getallenlijn en staafgrafieken uit de lijn zitten er niet in; die passen niet op een smalle strook. "
     "Mag een kind bij de sommen tot 100 een kladje gebruiken, leg dat dan klaar."

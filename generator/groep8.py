@@ -247,9 +247,9 @@ PLAN = [
 ]
 
 INTRO = (
-    "Eén pagina per week: <b>paginanummer = weeknummer</b>. Print per week zoveel pagina's als er leerlingen zijn, "
+    "Eén pagina per schoolweek; bovenaan staat het <b>weeknummer van de kalender</b>. Print per week zoveel pagina's als er leerlingen zijn, "
     "snijd langs de stippellijnen en leg per dag een stapeltje klaar. Elke strook: 10 opdrachten (± 5 minuten), "
-    "ongeveer 7 focus en 3 herhaling. Rekenmuurtje: blok 2/4/6 = week 8/16/24 (de lijn van groep 8 stopt na blok 6). "
-    "Week 25–32 herhalen alle doelen van groep 7 en 8; week 33–40 zijn extra. "
+    "ongeveer 7 focus en 3 herhaling. Rekenmuurtje: blok 2/4/6 = {w:8}, {w:16} en {w:24} (de lijn van groep 8 stopt na blok 6). "
+    "{W:25-32} herhalen alle doelen van groep 7 en 8; {w:33-40} zijn extra. "
     "<b>Rekenen tot 100 uit het hoofd en de tafels blijven het hele jaar terugkomen.</b>"
 )

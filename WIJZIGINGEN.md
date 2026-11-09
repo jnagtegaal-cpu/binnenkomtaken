@@ -4,3 +4,4 @@
 |---|---|---|---|
 | 2026-11-09 | Eerste versie: 40 weekbladen per groep, antwoordbladen, digibord-nakijken, kalender 2026-2027 regio Midden | 3–8 | 1–40 |
 | 2026-11-09 | Weeknummers zijn nu de weken van de kalender (week 46 i.p.v. lesweek 10), op de bladen, in het jaaroverzicht, in bestandsnamen en op de site. De sommen zelf zijn ongewijzigd. | 3–8 | alle |
+| 2026-11-09 | Nieuwe vormgeving van de site: kleur per groep, startpagina als tabel van deze week, plek voor de schoolnaam (instellingen.json). Werkbladen ongewijzigd. | site | – |

@@ -84,7 +84,7 @@ def maak_kalender(inst):
     if lw != 40:
         raise SystemExit(f"Let op: de kalender heeft {lw} lesweken met een blad, maar er zijn 40 weekbladen. "
                          f"Pas 'weken_zonder_blad' in instellingen.json aan.")
-    return {"schooljaar": inst["schooljaar"], "regio": inst["regio"], "weken": weken}
+    return {"school": inst.get("schoolnaam", ""), "schooljaar": inst["schooljaar"], "regio": inst["regio"], "weken": weken}
 
 
 def labels_van(kal):

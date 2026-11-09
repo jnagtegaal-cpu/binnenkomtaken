@@ -1,12 +1,12 @@
 /* Binnenkomtaken rekenen – site
  * Pagina's (via de #-link, zodat je ze kunt delen of als bladwijzer kunt bewaren):
- *   #/                     startpagina met de groepen
- *   #/groep/5              groep 5, deze week en de komende weken
+ *   #/                     startpagina: alle groepen met de week van nu
+ *   #/groep/5              groep 5: deze week en de komende weken
  *   #/groep/5/week/48      groep 5, vanaf week 48
  *   #/bord/5/48/3          nakijken op het digibord: groep 5, week 48, dag 3 (woensdag)
  * Weeknummers zijn de weken van de kalender (zoals in de agenda). Intern telt de generator lesweken 1–40;
  * de kalender (data/kalender.json) koppelt die aan de weeknummers ("kw").
- * Gegevens: data/kalender.json (schoolweken) en data/groepN.json + groepN/weekNN.json (gemaakt door generator/bouw.py).
+ * Elke groep heeft een eigen kleur: de klasse g3 … g8 op <body> zet de CSS-variabele --g.
  */
 "use strict";
 
@@ -14,18 +14,29 @@ const GROEPEN = [3, 4, 5, 6, 7, 8];
 const DAGEN = ["maandag", "dinsdag", "woensdag", "donderdag", "vrijdag"];
 const DAG_KORT = ["ma", "di", "wo", "do", "vr"];
 const MAANDEN = ["jan", "feb", "mrt", "apr", "mei", "jun", "jul", "aug", "sep", "okt", "nov", "dec"];
-const VENSTER = 4; // aantal lesweken dat de groepspagina tegelijk laat zien
+const VENSTER = 6; // aantal lesweken in de lijst "komende weken"
 
 const app = document.getElementById("app");
+const kop = document.getElementById("kop");
 const cache = {};
 let kalender = null;
 
+// ---------- pictogrammen ----------
+const I = {
+  pdf: '<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0-4-4m4 4 4-4M5 19h14"/></svg>',
+  check: '<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>',
+  bord: '<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>',
+  pijl: '<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>',
+  terug: '<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>',
+  scherm: '<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>',
+};
+
 // ---------- hulpjes ----------
-const $ = (html) => { const t = document.createElement("template"); t.innerHTML = html.trim(); return t.content.firstElementChild; };
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const pad = (n) => String(n).padStart(2, "0");
+const hoofdletter = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
-function datum(iso) { const [j, m, d] = iso.split("-").map(Number); return new Date(j, m - 1, d); }
+function datum(isoStr) { const [j, m, d] = isoStr.split("-").map(Number); return new Date(j, m - 1, d); }
 function iso(d) { return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; }
 function plusDagen(isoStr, n) { const d = datum(isoStr); d.setDate(d.getDate() + n); return iso(d); }
 function kortDatum(isoStr) { const d = datum(isoStr); return `${d.getDate()} ${MAANDEN[d.getMonth()]}`; }
@@ -40,9 +51,7 @@ function vandaagIso() {
   const p = new URLSearchParams(location.search).get("datum");
   return p && /^\d{4}-\d{2}-\d{2}$/.test(p) ? p : iso(new Date());
 }
-
-function opslaan(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* geen opslag beschikbaar */ } }
-function ophalen(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+function opslaan(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* geen opslag */ } }
 
 async function json(url) {
   if (!cache[url]) {
@@ -54,11 +63,15 @@ async function json(url) {
   return cache[url];
 }
 
+function zetGroepkleur(g) {
+  GROEPEN.forEach((x) => document.body.classList.remove(`g${x}`));
+  if (g) document.body.classList.add(`g${g}`);
+}
+
 // ---------- kalender ----------
 function lesweken() { return kalender.weken.filter((w) => w.lesweek); }
 function weekVan(n) { return kalender.weken.find((w) => w.lesweek === n); }
 function kwVan(n) { return weekVan(n).kw; }
-/** Weeknummer van de kalender -> lesweek (of null als die week geen blad heeft). */
 function lesVanKw(kw) { const w = kalender.weken.find((x) => x.lesweek && x.kw === kw); return w ? w.lesweek : null; }
 function bestand(g, n) { return `groep${g}/week${pad(kwVan(n))}`; }
 
@@ -67,143 +80,154 @@ function huidig() {
   const vandaag = vandaagIso();
   const lw = lesweken();
   for (const w of lw) {
-    if (vandaag <= plusDagen(w.maandag, 6)) {
-      return { lesweek: w.lesweek, bezig: vandaag >= w.maandag, week: w };
-    }
+    if (vandaag <= plusDagen(w.maandag, 6)) return { lesweek: w.lesweek, bezig: vandaag >= w.maandag, week: w };
   }
   return { lesweek: 40, bezig: false, voorbij: true, week: lw[lw.length - 1] };
 }
-
-/** Is vandaag een vakantie? Geeft de naam terug. */
 function vakantieNu() {
   const v = vandaagIso();
   const w = kalender.weken.find((x) => x.maandag <= v && v <= plusDagen(x.maandag, 6));
   if (w && w.soort === "vakantie") return w.naam;
-  if (v < kalender.weken[0].maandag || v > plusDagen(kalender.weken[kalender.weken.length - 1].maandag, 6)) return "zomer";
+  if (v < kalender.weken[0].maandag || v > plusDagen(kalender.weken[kalender.weken.length - 1].maandag, 6)) return "Zomervakantie";
   return null;
 }
-
-/** Dagnummer (1–5) van vandaag binnen lesweek n, anders 1. */
 function standaardDag(n) {
-  const w = weekVan(n);
-  const v = vandaagIso();
-  if (w && v >= w.maandag && v <= w.vrijdag) return datum(v).getDay(); // ma=1 … vr=5
+  const w = weekVan(n), v = vandaagIso();
+  if (w && v >= w.maandag && v <= w.vrijdag) return datum(v).getDay();
   return 1;
 }
+function vrijTekst(w) {
+  return (w.vrije_dagen || []).map((v) => `${esc(v.naam)} (${DAG_KORT[datum(v.datum).getDay() - 1] || ""} ${kortDatum(v.datum)})`).join(", ");
+}
 
-// ---------- kop en voet ----------
+// ---------- kop, navigatie en voet ----------
 function zetNav(actief) {
-  const nav = document.getElementById("groepnav");
-  nav.innerHTML = GROEPEN.map((g) => `<a href="#/groep/${g}" class="${g === actief ? "actief" : ""}">Groep ${g}</a>`).join("");
+  document.getElementById("groepnav").innerHTML = GROEPEN.map((g) =>
+    `<a href="#/groep/${g}" class="g${g} ${g === actief ? "actief" : ""}" ${g === actief ? 'aria-current="page"' : ""}>Groep ${g}</a>`).join("");
 }
 function zetVoet() {
+  const s = kalender.school ? `${esc(kalender.school)} · ` : "";
   document.getElementById("voet").innerHTML =
-    `Schooljaar ${esc(kalender.schooljaar)} · vakanties regio ${esc(kalender.regio)} · ` +
-    `bladen sluiten aan bij de automatiseringslijn van het Rekenmuurtje.`;
+    `${s}Schooljaar ${esc(kalender.schooljaar)} · vakanties regio ${esc(kalender.regio)} · ` +
+    `de bladen sluiten aan bij de automatiseringslijn van het Rekenmuurtje.`;
+  document.getElementById("schoolnaam").textContent = kalender.school || "";
 }
 
-// ---------- startpagina ----------
+function knoppenWeek(g, n, groot) {
+  const k = groot ? "" : " klein";
+  return `
+    <a class="knop vol${k}" href="${bestand(g, n)}.pdf" target="_blank" rel="noopener">${I.pdf}Werkblad</a>
+    <a class="knop${k}" href="${bestand(g, n)}-antwoorden.pdf" target="_blank" rel="noopener">${I.check}Antwoorden</a>
+    <a class="knop zacht${k}" href="#/bord/${g}/${kwVan(n)}/${standaardDag(n)}">${I.bord}Digibord</a>`;
+}
+
+// ---------- startpagina: tabel van deze week ----------
 async function toonStart() {
   document.body.classList.remove("bordmodus");
-  zetNav(null);
-  document.title = "Binnenkomtaken rekenen";
+  zetGroepkleur(null); zetNav(null); kop.innerHTML = "";
+  document.title = kalender.school ? `Binnenkomtaken rekenen – ${kalender.school}` : "Binnenkomtaken rekenen";
   const h = huidig();
-  const laatst = Number(ophalen("laatsteGroep"));
   const vak = vakantieNu();
-  const tegels = await Promise.all(GROEPEN.map(async (g) => {
-    let thema = "";
-    try { const d = await json(`data/groep${g}.json`); thema = (d.weken.find((w) => w.week === h.lesweek) || {}).thema || ""; } catch (e) { /* nog niet gebouwd */ }
-    return `<a class="tegel ${g === laatst ? "laatst" : ""}" href="#/groep/${g}">
-      <div class="nr">${g}</div><div class="lbl">Groep ${g}</div>
-      <div class="nu">${h.bezig ? "Deze week" : "Volgende week"}: week ${kwVan(h.lesweek)}${thema ? `<br>${esc(thema)}` : ""}</div></a>`;
+  const rijen = await Promise.all(GROEPEN.map(async (g) => {
+    let info = null;
+    try { info = (await json(`data/groep${g}.json`)).weken.find((w) => w.week === h.lesweek); } catch (e) { /* nog niet gebouwd */ }
+    return `<div class="rij g${g}">
+      <a class="groeplabel" href="#/groep/${g}"><span class="nr">${g}</span>Groep ${g}</a>
+      <div class="thema">${info ? `<strong>${esc(info.thema)}</strong><div class="chips">${info.focus.map((f) => `<span>${f}</span>`).join("")}</div>` : "<span>Nog niet beschikbaar</span>"}</div>
+      <div class="acties">${info ? knoppenWeek(g, h.lesweek, false) : ""}
+        <a class="knop klein" href="#/groep/${g}" aria-label="Alle weken van groep ${g}">Alle weken${I.pijl}</a></div>
+    </div>`;
   }));
   app.innerHTML = `
-    <section class="intro">
-      <h1>Kies je groep</h1>
-      <p>Elke dag na de pauze een strookje met tien sommen. Per week één werkblad: print het voor je hele klas,
-      snijd het in vijf stroken en leg elke dag een stapeltje klaar. Nakijken doen de kinderen zelf met het digibord.</p>
-      ${vak ? `<p class="melding">Het is nu ${vak === "zomer" ? "zomervakantie" : esc(vak.toLowerCase())}. Je ziet de eerste week na de vakantie.</p>` : ""}
+    <div class="paginakop">
+      <div>
+        <h1>${h.bezig ? "Deze week" : "Volgende week"}: week ${h.week.kw}</h1>
+        <div class="sub">${hoofdletter(bereik(h.week))} · elke dag na de pauze tien sommen</div>
+      </div>
+    </div>
+    ${vak ? `<p class="melding">Het is nu ${esc(vak.toLowerCase())}. Je ziet de eerste week na de vakantie.</p>` : ""}
+    ${h.week.vrije_dagen ? `<p class="melding">Deze week vrij: ${vrijTekst(h.week)}. Er blijft een strookje over voor extra herhaling.</p>` : ""}
+    <section class="tabel" aria-label="Binnenkomtaken per groep">
+      <div class="kopregel"><span>Groep</span><span>Thema en onderdelen</span><span>Downloaden en nakijken</span></div>
+      ${rijen.join("")}
     </section>
-    <div class="tegels">${tegels.join("")}</div>
-    <section class="uitleg">
-      <div><h3>1. Printen</h3><p>Open je groep en download het werkblad van deze week. Print één blad per leerling.</p></div>
-      <div><h3>2. Snijden</h3><p>Snijd langs de stippellijnen: vijf stroken, één per dag. Leg ze na de pauze klaar.</p></div>
-      <div><h3>3. Nakijken</h3><p>Open <em>Nakijken op het digibord</em>. Tik op een geel vakje om het antwoord te laten zien.</p></div>
+    <section class="stappen">
+      <div><b>1</b><h3>Printen</h3><p>Download het werkblad van deze week en print één blad per leerling.</p></div>
+      <div><b>2</b><h3>Snijden</h3><p>Snijd langs de stippellijnen: vijf stroken, één per dag. Leg ze na de pauze klaar.</p></div>
+      <div><b>3</b><h3>Nakijken</h3><p>Open <em>Digibord</em> en tik op een vakje om het antwoord te laten zien.</p></div>
     </section>`;
 }
 
 // ---------- groepspagina ----------
 async function toonGroep(g, vanaf) {
   document.body.classList.remove("bordmodus");
-  zetNav(g);
-  opslaan("laatsteGroep", String(g));
-  document.title = `Groep ${g} – Binnenkomtaken`;
+  zetGroepkleur(g); zetNav(g); opslaan("laatsteGroep", String(g));
+  document.title = `Groep ${g} – Binnenkomtaken rekenen`;
   const data = await json(`data/groep${g}.json`);
   const h = huidig();
-  const start = Math.min(Math.max(vanaf || h.lesweek, 1), 40);
-  const eind = Math.min(start + VENSTER - 1, 40);
   const vak = vakantieNu();
+  const focus = Math.min(Math.max(vanaf || h.lesweek, 1), 40);
+  const info = (n) => data.weken.find((x) => x.week === n);
+  const fw = weekVan(focus);
+  const fi = info(focus);
+  const isNu = focus === h.lesweek;
 
-  // alle kalenderweken van start t/m eind, inclusief vakanties ertussen
+  // de lijst: de weken na de uitgelichte week, met vakanties ertussen
   const ws = kalender.weken;
-  const i0 = ws.findIndex((w) => w.lesweek === start);
-  const i1 = ws.findIndex((w) => w.lesweek === eind);
-  const blok = ws.slice(i0, i1 + 1);
-
-  const kaarten = blok.map((w) => {
-    if (!w.lesweek) {
-      return `<div class="vakantie"><span>${esc(w.naam)}</span><span>week ${w.kw} · ${bereik(w)}</span></div>`;
+  const i0 = ws.indexOf(fw) + 1;
+  let teller = 0;
+  const lijst = [];
+  for (let i = i0; i < ws.length && teller < VENSTER; i++) {
+    const w = ws[i];
+    if (w.lesweek) {
+      teller++;
+      const x = info(w.lesweek);
+      lijst.push(`<div class="rij">
+        <div class="wk">Week ${w.kw}<small>${bereik(w)}</small></div>
+        <div class="thema"><strong>${x ? esc(x.thema) : "Nog niet beschikbaar"}</strong>
+          ${w.vrije_dagen ? `<div class="vrij">Vrij: ${vrijTekst(w)}</div>` : ""}</div>
+        <div class="acties">${x ? knoppenWeek(g, w.lesweek, false) : ""}</div>
+      </div>`);
+    } else if (lijst.length) {
+      lijst.push(`<div class="rij vak"><div class="wk">Week ${w.kw}</div><div>${esc(w.naam)}</div><div>${bereik(w)}</div></div>`);
     }
-    const info = data.weken.find((x) => x.week === w.lesweek);
-    const isNu = w.lesweek === h.lesweek;
-    const groot = isNu ? "groot" : "";
-    const lab = isNu ? `<span class="label">${h.bezig ? "DEZE WEEK" : "VOLGENDE WEEK"}</span>` : "";
-    const vrij = (w.vrije_dagen || []).map((v) => `${esc(v.naam)} (${DAG_KORT[datum(v.datum).getDay() - 1] || ""} ${kortDatum(v.datum)})`).join(", ");
-    const map = bestand(g, w.lesweek);
-    if (!info) {
-      return `<article class="week"><div><h2>${lab}Week ${w.kw}</h2><div class="datum">${bereik(w)}</div>
-        <p class="thema">Dit blad is nog niet klaar.</p></div></article>`;
-    }
-    return `<article class="week ${isNu ? "nu" : ""} ${groot}">
-      <div>
-        <h2>${lab}Week ${w.kw} <span class="datum">· ${bereik(w)}</span></h2>
-        <p class="thema">${esc(info.thema)}</p>
-        <div class="focus">${info.focus.map((f) => `<span>${f}</span>`).join("")}</div>
-        ${vrij ? `<div class="vrij">Vrij: ${vrij}. Er blijft een strookje over (extra herhaling).</div>` : ""}
-      </div>
-      <div class="acties">
-        <a class="knop primair" href="${map}.pdf" target="_blank" rel="noopener">Werkblad (PDF)</a>
-        <a class="knop" href="${map}-antwoorden.pdf" target="_blank" rel="noopener">Antwoorden (PDF)</a>
-        <a class="knop groen" href="#/bord/${g}/${w.kw}/${standaardDag(w.lesweek)}">Nakijken op het digibord</a>
-      </div>
-    </article>`;
-  });
+  }
 
-  const opties = lesweken().map((w) => `<option value="${w.lesweek}" ${w.lesweek === start ? "selected" : ""}>Week ${w.kw} · ${bereik(w)}</option>`).join("");
+  const opties = lesweken().map((w) => `<option value="${w.lesweek}" ${w.lesweek === focus ? "selected" : ""}>Week ${w.kw} · ${bereik(w)}</option>`).join("");
+  kop.innerHTML = `
+    <section class="groepkop"><div class="groepkop-in">
+      <div><h1>Groep ${g}</h1><div class="sub">${h.bezig ? "Deze week" : "Volgende week"}: week ${h.week.kw} · ${bereik(h.week)}</div></div>
+      <div class="bladeren">
+        <button class="knop klein" id="eerder" ${focus <= 1 ? "disabled" : ""}>${I.terug}Vorige</button>
+        <button class="knop klein" id="nu" ${isNu ? "disabled" : ""}>Deze week</button>
+        <button class="knop klein" id="later" ${focus >= 40 ? "disabled" : ""}>Volgende${I.pijl}</button>
+        <select class="knop klein" id="kies" aria-label="Ga naar week">${opties}</select>
+      </div>
+    </div></section>`;
+
   app.innerHTML = `
-    <div class="kop-groep">
-      <div><h1>Groep ${g}</h1><div class="sub">${h.bezig ? "Deze week" : "Volgende week"}: week ${h.week.kw} (${bereik(h.week)})</div></div>
-    </div>
-    ${vak && !vanaf ? `<p class="melding">Het is nu ${vak === "zomer" ? "zomervakantie" : esc(vak.toLowerCase())}. Bovenaan staat de eerste week na de vakantie.</p>` : ""}
-    <div class="bladeren">
-      <button class="knop" id="eerder" ${start <= 1 ? "disabled" : ""}>← Eerdere weken</button>
-      <button class="knop" id="nu" ${start === h.lesweek ? "disabled" : ""}>Deze week</button>
-      <button class="knop" id="later" ${eind >= 40 ? "disabled" : ""}>Latere weken →</button>
-      <select class="knop" id="kies" aria-label="Ga naar week">${opties}</select>
-    </div>
-    <section class="weken">${kaarten.join("")}</section>
-    <section class="jaar">
-      <h3>Heel schooljaar</h3>
-      <div class="acties">
-        <a class="knop" href="groep${g}/groep${g}-heel-jaar.pdf" target="_blank" rel="noopener">Alle 40 werkbladen (PDF)</a>
-        <a class="knop" href="groep${g}/groep${g}-antwoorden-heel-jaar.pdf" target="_blank" rel="noopener">Alle antwoorden (PDF)</a>
-        <a class="knop" href="groep${g}/groep${g}-jaaroverzicht.pdf" target="_blank" rel="noopener">Jaaroverzicht: opbouw per week</a>
+    ${vak && !vanaf ? `<p class="melding">Het is nu ${esc(vak.toLowerCase())}. Hieronder staat de eerste week na de vakantie.</p>` : ""}
+    <article class="nu-kaart">
+      <div>
+        <span class="etiket">${isNu ? (h.bezig ? "Deze week" : "Volgende week") : (focus < h.lesweek ? "Eerdere week" : "Later dit jaar")}</span>
+        <h2>Week ${fw.kw} <span class="datum">· ${bereik(fw)}</span></h2>
+        <p class="thema-groot">${fi ? esc(fi.thema) : "Dit blad is nog niet beschikbaar."}</p>
+        ${fi ? `<div class="chips">${fi.focus.map((f) => `<span>${f}</span>`).join("")}</div>` : ""}
+        ${fw.vrije_dagen ? `<div class="vrij">Vrij: ${vrijTekst(fw)}. Er blijft een strookje over voor extra herhaling.</div>` : ""}
       </div>
-    </section>`;
+      <div class="acties">${fi ? knoppenWeek(g, focus, true) : ""}</div>
+    </article>
+    ${lijst.length ? `<h2 class="sectie">Daarna</h2><section class="lijst">${lijst.join("")}</section>` : ""}
+    <h2 class="sectie">Heel schooljaar</h2>
+    <div class="jaar">
+      <a class="knop" href="groep${g}/groep${g}-heel-jaar.pdf" target="_blank" rel="noopener">${I.pdf}Alle 40 werkbladen</a>
+      <a class="knop" href="groep${g}/groep${g}-antwoorden-heel-jaar.pdf" target="_blank" rel="noopener">${I.check}Alle antwoorden</a>
+      <a class="knop" href="groep${g}/groep${g}-jaaroverzicht.pdf" target="_blank" rel="noopener">${I.pdf}Jaaroverzicht: opbouw per week</a>
+    </div>`;
 
   const naar = (n) => { location.hash = n === h.lesweek ? `#/groep/${g}` : `#/groep/${g}/week/${kwVan(n)}`; };
-  document.getElementById("eerder").onclick = () => naar(Math.max(1, start - VENSTER));
-  document.getElementById("later").onclick = () => naar(Math.min(40, start + VENSTER));
+  document.getElementById("eerder").onclick = () => naar(Math.max(1, focus - 1));
+  document.getElementById("later").onclick = () => naar(Math.min(40, focus + 1));
   document.getElementById("nu").onclick = () => naar(h.lesweek);
   document.getElementById("kies").onchange = (e) => naar(Number(e.target.value));
 }
@@ -213,7 +237,7 @@ let bordToetsen = null;
 
 async function toonBord(g, n, dag) {
   document.body.classList.add("bordmodus");
-  zetNav(g);
+  zetGroepkleur(g); zetNav(g);
   n = Math.min(Math.max(n, 1), 40);
   dag = Math.min(Math.max(dag, 1), 5);
   const w = weekVan(n);
@@ -226,49 +250,45 @@ async function toonBord(g, n, dag) {
   const tabs = DAGEN.map((naam, i) => {
     const dIso = plusDagen(w.maandag, i);
     return `<button data-dag="${i + 1}" class="${i + 1 === dag ? "actief" : ""} ${vrijeDatums.has(dIso) ? "vrij" : ""}"
-      title="${vrijeDatums.has(dIso) ? "vrije dag" : ""}">${naam[0].toUpperCase() + naam.slice(1, 2)}<small>${kortDatum(dIso)}</small></button>`;
+      ${vrijeDatums.has(dIso) ? 'title="vrije dag"' : ""}>${hoofdletter(DAG_KORT[i])}<small>${kortDatum(dIso)}</small></button>`;
   }).join("");
 
-  // gele vakjes over de antwoorden; bij omcirkel- en tekenopdrachten dekt het vakje de hele opdracht af
-  let volgorde = [];
+  // vakjes over de antwoorden; bij omcirkel- en tekenopdrachten dekt het vakje de hele opdracht af
   const dekkingen = dd.vakjes.map((rects, i) => rects.map(([x, y, bw, bh], j) => {
-    const isCel = dd.vakjes[i].length === 1 && bw > 0.12;
-    const p = isCel ? 0 : 0.004; // klein randje extra
-    volgorde.push(`${i}-${j}`);
+    const isCel = rects.length === 1 && bw > 0.12;
+    const p = isCel ? 0 : 0.004;
     return `<button class="dekking ${isCel ? "cel" : ""}" data-i="${i}" aria-label="Antwoord ${i + 1} tonen"
       style="left:${(x - p) * 100}%;top:${(y - p * 3.55) * 100}%;width:${(bw + 2 * p) * 100}%;height:${(bh + 2 * p * 3.55) * 100}%">${j === 0 ? i + 1 : ""}</button>`;
   }).join("")).join("");
 
+  kop.innerHTML = `
+    <section class="bordbalk"><div class="bordbalk-in">
+      <div><h1>Groep ${g} · Week ${w.kw} · ${DAGEN[dag - 1]} ${kortDatum(datumDag)}</h1><div class="sub">${esc(meta.thema)}</div></div>
+      <div class="dagen" role="tablist" aria-label="Dag">${tabs}</div>
+    </div></section>`;
   app.innerHTML = `
-    <div class="bordkop">
-      <div>
-        <h1>Groep ${g} · Week ${w.kw} · ${DAGEN[dag - 1]} ${kortDatum(datumDag)}</h1>
-        <div class="sub">${esc(meta.thema)}</div>
+    <div class="bordvlak">
+      <div class="strook" id="strook">
+        <img src="${bestand(g, n)}-dag${dag}.png" alt="Strook met antwoorden, ${DAGEN[dag - 1]} week ${w.kw}">
+        ${dekkingen}
       </div>
-      <div class="dagen" role="tablist">${tabs}</div>
-    </div>
-    <div class="strook" id="strook">
-      <img src="${bestand(g, n)}-dag${dag}.png" alt="Strook met antwoorden, ${DAGEN[dag - 1]} week ${w.kw}">
-      ${dekkingen}
-    </div>
-    <div class="bordknoppen">
-      <button class="knop groen" id="volgende">Volgend antwoord ▶</button>
-      <button class="knop" id="alles">Alles tonen</button>
-      <button class="knop" id="verberg">Alles verbergen</button>
-      <button class="knop" id="vorigeDag">← Vorige dag</button>
-      <button class="knop" id="volgendeDag">Volgende dag →</button>
-      <button class="knop" id="scherm">Volledig scherm</button>
-      <a class="knop" href="#/groep/${g}/week/${w.kw}">Terug</a>
-    </div>
-    <p class="tip">Tik op een geel vakje om het antwoord te zien. Toetsen: spatie = volgend antwoord, A = alles tonen, V = alles verbergen, ←/→ = vorige/volgende dag.</p>
-    <details class="tekstantw"><summary>Antwoorden als tekst</summary><ol>${dd.antwoorden.map((a) => `<li>${esc(a)}</li>`).join("")}</ol></details>`;
+      <div class="bordknoppen">
+        <button class="knop vol" id="volgende">Volgend antwoord${I.pijl}</button>
+        <button class="knop" id="alles">Alles tonen</button>
+        <button class="knop" id="verberg">Alles verbergen</button>
+        <button class="knop" id="vorigeDag">${I.terug}Vorige dag</button>
+        <button class="knop" id="volgendeDag">Volgende dag${I.pijl}</button>
+        <button class="knop" id="scherm">${I.scherm}Volledig scherm</button>
+        <a class="knop" href="#/groep/${g}/week/${w.kw}">Terug</a>
+      </div>
+      <p class="tip">Tik op een vakje om het antwoord te zien. Toetsen: spatie = volgend antwoord, A = alles tonen, V = alles verbergen, ←/→ = vorige/volgende dag.</p>
+      <details class="tekstantw"><summary>Antwoorden als tekst</summary><ol>${dd.antwoorden.map((a) => `<li>${esc(a)}</li>`).join("")}</ol></details>
+    </div>`;
 
   const dek = [...app.querySelectorAll(".dekking")];
-  dek.forEach((b) => { b.onclick = () => { const i = b.dataset.i; dek.filter((x) => x.dataset.i === i).forEach((x) => x.classList.toggle("open")); }; });
-  const volgende = () => {
-    const dicht = dek.find((x) => !x.classList.contains("open"));
-    if (dicht) dek.filter((x) => x.dataset.i === dicht.dataset.i).forEach((x) => x.classList.add("open"));
-  };
+  const groep = (i) => dek.filter((x) => x.dataset.i === i);
+  dek.forEach((b) => { b.onclick = () => groep(b.dataset.i).forEach((x) => x.classList.toggle("open")); });
+  const volgende = () => { const d = dek.find((x) => !x.classList.contains("open")); if (d) groep(d.dataset.i).forEach((x) => x.classList.add("open")); };
   const alles = (open) => dek.forEach((x) => x.classList.toggle("open", open));
   const gaNaarDag = (stap) => {
     let nn = n, d2 = dag + stap;
@@ -276,7 +296,7 @@ async function toonBord(g, n, dag) {
     if (d2 > 5) { if (nn < 40) { nn++; d2 = 1; } else d2 = 5; }
     location.hash = `#/bord/${g}/${kwVan(nn)}/${d2}`;
   };
-  app.querySelectorAll(".dagen button").forEach((b) => { b.onclick = () => { location.hash = `#/bord/${g}/${w.kw}/${b.dataset.dag}`; }; });
+  kop.querySelectorAll(".dagen button").forEach((b) => { b.onclick = () => { location.hash = `#/bord/${g}/${w.kw}/${b.dataset.dag}`; }; });
   document.getElementById("volgende").onclick = volgende;
   document.getElementById("alles").onclick = () => alles(true);
   document.getElementById("verberg").onclick = () => alles(false);
@@ -313,6 +333,7 @@ async function route() {
     }
   } catch (e) {
     console.error(e);
+    kop.innerHTML = "";
     app.innerHTML = `<p class="melding">Er ging iets mis bij het laden. Probeer de pagina te verversen.</p>`;
   }
   window.scrollTo(0, 0);

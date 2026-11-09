@@ -1,5 +1,7 @@
 {
   "_uitleg": "Schoolkalender en bouwinstellingen. Na een wijziging: python generator/bouw.py --kalender (alleen kalender) of python generator/bouw.py (alles bijwerken). Datums als JJJJ-MM-DD.",
+  "schoolnaam": "",
+  "_schoolnaam_uitleg": "Naam van de school; staat bovenaan de site. Leeg laten = geen naam.",
   "schooljaar": "2026-2027",
   "regio": "Midden",
   "eerste_schooldag": "2026-08-31",

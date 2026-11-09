@@ -5,17 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Binnenkomtaken rekenen</title>
 <meta name="description" content="Elke dag na de pauze tien sommen: werkbladen per week en nakijken op het digibord.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231f9bd7'/%3E%3Ctext x='32' y='44' font-family='Arial' font-weight='bold' font-size='34' text-anchor='middle' fill='white'%3E%2B%3C/text%3E%3C/svg%3E">
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23334155'/%3E%3Cpath d='M32 16v32M16 32h32' stroke='white' stroke-width='7' stroke-linecap='round'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <header class="top">
-  <a class="brand" href="#/">
-    <span class="logo" aria-hidden="true">+</span>
-    <span><strong>Binnenkomtaken rekenen</strong><small>Elke dag na de pauze tien sommen</small></span>
-  </a>
-  <nav class="groepnav" id="groepnav" aria-label="Groepen"></nav>
+  <div class="top-in">
+    <a class="brand" href="#/">
+      <span class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
+      <span><span class="school" id="schoolnaam"></span><strong>Binnenkomtaken rekenen</strong></span>
+    </a>
+    <nav class="groepnav" id="groepnav" aria-label="Groepen"></nav>
+  </div>
 </header>
+<div id="kop"></div>
 <main id="app" tabindex="-1"><p class="laden">Laden…</p></main>
 <footer class="voet" id="voet"></footer>
 <script src="app.js"></script>

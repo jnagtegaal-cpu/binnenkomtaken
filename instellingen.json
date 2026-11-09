@@ -1,0 +1,25 @@
+{
+  "_uitleg": "Schoolkalender en bouwinstellingen. Na een wijziging: python generator/bouw.py --kalender (alleen kalender) of python generator/bouw.py (alles bijwerken). Datums als JJJJ-MM-DD.",
+  "schooljaar": "2026-2027",
+  "regio": "Midden",
+  "eerste_schooldag": "2026-08-31",
+  "laatste_schooldag": "2027-07-16",
+  "vakanties": [
+    {"naam": "Herfstvakantie", "van": "2026-10-17", "tot": "2026-10-25"},
+    {"naam": "Kerstvakantie", "van": "2026-12-19", "tot": "2027-01-03"},
+    {"naam": "Voorjaarsvakantie", "van": "2027-02-20", "tot": "2027-02-28"},
+    {"naam": "Meivakantie", "van": "2027-04-24", "tot": "2027-05-02"},
+    {"naam": "Zomervakantie", "van": "2027-07-17", "tot": "2027-08-29"}
+  ],
+  "_vrije_dagen_uitleg": "Losse vrije dagen en studiedagen. Ze worden op de site bij de week getoond (die week heeft dan minder lesdagen). Vul hier jullie studiedagen aan.",
+  "vrije_dagen": [
+    {"naam": "Tweede paasdag", "datum": "2027-03-29"},
+    {"naam": "Hemelvaartsdag", "datum": "2027-05-06"},
+    {"naam": "Vrijdag na Hemelvaart", "datum": "2027-05-07"},
+    {"naam": "Tweede pinksterdag", "datum": "2027-05-17"}
+  ],
+  "_weken_zonder_blad_uitleg": "Schoolweken (maandag-datum) waarin geen nieuw blad komt. Dit schooljaar heeft 41 schoolweken en er zijn 40 weekbladen; de laatste week (afscheid, opruimen) krijgt geen blad.",
+  "weken_zonder_blad": ["2027-07-12"],
+  "_versies_uitleg": "Wil je voor een week een compleet nieuwe set sommen (zelfde opbouw, andere getallen)? Hoog dan hier het versienummer op, bijvoorbeeld {\"5\": {\"14\": 2}} voor groep 5 week 14, en bouw die week opnieuw.",
+  "versies": {}
+}

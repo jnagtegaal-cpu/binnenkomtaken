@@ -1,0 +1,304 @@
+{
+ "schooljaar": "2026-2027",
+ "regio": "Midden",
+ "weken": [
+  {
+   "maandag": "2026-08-31",
+   "vrijdag": "2026-09-04",
+   "soort": "les",
+   "lesweek": 1
+  },
+  {
+   "maandag": "2026-09-07",
+   "vrijdag": "2026-09-11",
+   "soort": "les",
+   "lesweek": 2
+  },
+  {
+   "maandag": "2026-09-14",
+   "vrijdag": "2026-09-18",
+   "soort": "les",
+   "lesweek": 3
+  },
+  {
+   "maandag": "2026-09-21",
+   "vrijdag": "2026-09-25",
+   "soort": "les",
+   "lesweek": 4
+  },
+  {
+   "maandag": "2026-09-28",
+   "vrijdag": "2026-10-02",
+   "soort": "les",
+   "lesweek": 5
+  },
+  {
+   "maandag": "2026-10-05",
+   "vrijdag": "2026-10-09",
+   "soort": "les",
+   "lesweek": 6
+  },
+  {
+   "maandag": "2026-10-12",
+   "vrijdag": "2026-10-16",
+   "soort": "les",
+   "lesweek": 7
+  },
+  {
+   "maandag": "2026-10-19",
+   "vrijdag": "2026-10-23",
+   "soort": "vakantie",
+   "naam": "Herfstvakantie"
+  },
+  {
+   "maandag": "2026-10-26",
+   "vrijdag": "2026-10-30",
+   "soort": "les",
+   "lesweek": 8
+  },
+  {
+   "maandag": "2026-11-02",
+   "vrijdag": "2026-11-06",
+   "soort": "les",
+   "lesweek": 9
+  },
+  {
+   "maandag": "2026-11-09",
+   "vrijdag": "2026-11-13",
+   "soort": "les",
+   "lesweek": 10
+  },
+  {
+   "maandag": "2026-11-16",
+   "vrijdag": "2026-11-20",
+   "soort": "les",
+   "lesweek": 11
+  },
+  {
+   "maandag": "2026-11-23",
+   "vrijdag": "2026-11-27",
+   "soort": "les",
+   "lesweek": 12
+  },
+  {
+   "maandag": "2026-11-30",
+   "vrijdag": "2026-12-04",
+   "soort": "les",
+   "lesweek": 13
+  },
+  {
+   "maandag": "2026-12-07",
+   "vrijdag": "2026-12-11",
+   "soort": "les",
+   "lesweek": 14
+  },
+  {
+   "maandag": "2026-12-14",
+   "vrijdag": "2026-12-18",
+   "soort": "les",
+   "lesweek": 15
+  },
+  {
+   "maandag": "2026-12-21",
+   "vrijdag": "2026-12-25",
+   "soort": "vakantie",
+   "naam": "Kerstvakantie"
+  },
+  {
+   "maandag": "2026-12-28",
+   "vrijdag": "2027-01-01",
+   "soort": "vakantie",
+   "naam": "Kerstvakantie"
+  },
+  {
+   "maandag": "2027-01-04",
+   "vrijdag": "2027-01-08",
+   "soort": "les",
+   "lesweek": 16
+  },
+  {
+   "maandag": "2027-01-11",
+   "vrijdag": "2027-01-15",
+   "soort": "les",
+   "lesweek": 17
+  },
+  {
+   "maandag": "2027-01-18",
+   "vrijdag": "2027-01-22",
+   "soort": "les",
+   "lesweek": 18
+  },
+  {
+   "maandag": "2027-01-25",
+   "vrijdag": "2027-01-29",
+   "soort": "les",
+   "lesweek": 19
+  },
+  {
+   "maandag": "2027-02-01",
+   "vrijdag": "2027-02-05",
+   "soort": "les",
+   "lesweek": 20
+  },
+  {
+   "maandag": "2027-02-08",
+   "vrijdag": "2027-02-12",
+   "soort": "les",
+   "lesweek": 21
+  },
+  {
+   "maandag": "2027-02-15",
+   "vrijdag": "2027-02-19",
+   "soort": "les",
+   "lesweek": 22
+  },
+  {
+   "maandag": "2027-02-22",
+   "vrijdag": "2027-02-26",
+   "soort": "vakantie",
+   "naam": "Voorjaarsvakantie"
+  },
+  {
+   "maandag": "2027-03-01",
+   "vrijdag": "2027-03-05",
+   "soort": "les",
+   "lesweek": 23
+  },
+  {
+   "maandag": "2027-03-08",
+   "vrijdag": "2027-03-12",
+   "soort": "les",
+   "lesweek": 24
+  },
+  {
+   "maandag": "2027-03-15",
+   "vrijdag": "2027-03-19",
+   "soort": "les",
+   "lesweek": 25
+  },
+  {
+   "maandag": "2027-03-22",
+   "vrijdag": "2027-03-26",
+   "soort": "les",
+   "lesweek": 26
+  },
+  {
+   "maandag": "2027-03-29",
+   "vrijdag": "2027-04-02",
+   "soort": "les",
+   "lesweek": 27,
+   "vrije_dagen": [
+    {
+     "datum": "2027-03-29",
+     "naam": "Tweede paasdag"
+    }
+   ]
+  },
+  {
+   "maandag": "2027-04-05",
+   "vrijdag": "2027-04-09",
+   "soort": "les",
+   "lesweek": 28
+  },
+  {
+   "maandag": "2027-04-12",
+   "vrijdag": "2027-04-16",
+   "soort": "les",
+   "lesweek": 29
+  },
+  {
+   "maandag": "2027-04-19",
+   "vrijdag": "2027-04-23",
+   "soort": "les",
+   "lesweek": 30
+  },
+  {
+   "maandag": "2027-04-26",
+   "vrijdag": "2027-04-30",
+   "soort": "vakantie",
+   "naam": "Meivakantie"
+  },
+  {
+   "maandag": "2027-05-03",
+   "vrijdag": "2027-05-07",
+   "soort": "les",
+   "lesweek": 31,
+   "vrije_dagen": [
+    {
+     "datum": "2027-05-06",
+     "naam": "Hemelvaartsdag"
+    },
+    {
+     "datum": "2027-05-07",
+     "naam": "Vrijdag na Hemelvaart"
+    }
+   ]
+  },
+  {
+   "maandag": "2027-05-10",
+   "vrijdag": "2027-05-14",
+   "soort": "les",
+   "lesweek": 32
+  },
+  {
+   "maandag": "2027-05-17",
+   "vrijdag": "2027-05-21",
+   "soort": "les",
+   "lesweek": 33,
+   "vrije_dagen": [
+    {
+     "datum": "2027-05-17",
+     "naam": "Tweede pinksterdag"
+    }
+   ]
+  },
+  {
+   "maandag": "2027-05-24",
+   "vrijdag": "2027-05-28",
+   "soort": "les",
+   "lesweek": 34
+  },
+  {
+   "maandag": "2027-05-31",
+   "vrijdag": "2027-06-04",
+   "soort": "les",
+   "lesweek": 35
+  },
+  {
+   "maandag": "2027-06-07",
+   "vrijdag": "2027-06-11",
+   "soort": "les",
+   "lesweek": 36
+  },
+  {
+   "maandag": "2027-06-14",
+   "vrijdag": "2027-06-18",
+   "soort": "les",
+   "lesweek": 37
+  },
+  {
+   "maandag": "2027-06-21",
+   "vrijdag": "2027-06-25",
+   "soort": "les",
+   "lesweek": 38
+  },
+  {
+   "maandag": "2027-06-28",
+   "vrijdag": "2027-07-02",
+   "soort": "les",
+   "lesweek": 39
+  },
+  {
+   "maandag": "2027-07-05",
+   "vrijdag": "2027-07-09",
+   "soort": "les",
+   "lesweek": 40
+  },
+  {
+   "maandag": "2027-07-12",
+   "vrijdag": "2027-07-16",
+   "soort": "geen blad",
+   "naam": "Geen binnenkomtaak deze week"
+  }
+ ]
+}

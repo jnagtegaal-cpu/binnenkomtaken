@@ -27,6 +27,7 @@ const I = {
   check: '<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>',
   bord: '<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>',
   pijl: '<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>',
+  zon: '<svg class="zon" viewBox="0 0 24 24" fill="#ffd43b" stroke="#1f2340" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>',
   terug: '<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>',
   scherm: '<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>',
 };
@@ -128,33 +129,28 @@ async function toonStart() {
   document.title = kalender.school ? `Binnenkomtaken rekenen – ${kalender.school}` : "Binnenkomtaken rekenen";
   const h = huidig();
   const vak = vakantieNu();
-  const rijen = await Promise.all(GROEPEN.map(async (g) => {
+  const kaarten = await Promise.all(GROEPEN.map(async (g) => {
     let info = null;
     try { info = (await json(`data/groep${g}.json`)).weken.find((w) => w.week === h.lesweek); } catch (e) { /* nog niet gebouwd */ }
-    return `<div class="rij g${g}">
-      <a class="groeplabel" href="#/groep/${g}"><span class="nr">${g}</span>Groep ${g}</a>
-      <div class="thema">${info ? `<strong>${esc(info.thema)}</strong><div class="chips">${info.focus.map((f) => `<span>${f}</span>`).join("")}</div>` : "<span>Nog niet beschikbaar</span>"}</div>
-      <div class="acties">${info ? knoppenWeek(g, h.lesweek, false) : ""}
-        <a class="knop klein" href="#/groep/${g}" aria-label="Alle weken van groep ${g}">Alle weken${I.pijl}</a></div>
-    </div>`;
+    return `<article class="groepkaart g${g}">
+      <a class="kaartkop" href="#/groep/${g}"><span class="badge">${g}</span><strong>Groep ${g}</strong>
+        <span class="meer">alle weken${I.pijl}</span></a>
+      <p class="thema">${info ? esc(info.thema) : "Nog niet beschikbaar"}</p>
+      <div class="acties">${info ? knoppenWeek(g, h.lesweek, false) : ""}</div>
+    </article>`;
   }));
   app.innerHTML = `
     <div class="paginakop">
-      <div>
-        <h1>${h.bezig ? "Deze week" : "Volgende week"}: week ${h.week.kw}</h1>
-        <div class="sub">${hoofdletter(bereik(h.week))} · elke dag na de pauze tien sommen</div>
-      </div>
+      <h1>${h.bezig ? "Deze week" : "Volgende week"}: week ${h.week.kw}</h1>
+      <div class="sub">${hoofdletter(bereik(h.week))} · elke dag na de pauze tien sommen</div>
     </div>
     ${vak ? `<p class="melding">Het is nu ${esc(vak.toLowerCase())}. Je ziet de eerste week na de vakantie.</p>` : ""}
     ${h.week.vrije_dagen ? `<p class="melding">Deze week vrij: ${vrijTekst(h.week)}. Er blijft een strookje over voor extra herhaling.</p>` : ""}
-    <section class="tabel" aria-label="Binnenkomtaken per groep">
-      <div class="kopregel"><span>Groep</span><span>Thema en onderdelen</span><span>Downloaden en nakijken</span></div>
-      ${rijen.join("")}
-    </section>
+    <section class="kaarten" aria-label="Binnenkomtaken per groep">${kaarten.join("")}</section>
     <section class="stappen">
       <div><b>1</b><h3>Printen</h3><p>Download het werkblad van deze week en print één blad per leerling.</p></div>
       <div><b>2</b><h3>Snijden</h3><p>Snijd langs de stippellijnen: vijf stroken, één per dag. Leg ze na de pauze klaar.</p></div>
-      <div><b>3</b><h3>Nakijken</h3><p>Open <em>Digibord</em> en tik op een vakje om het antwoord te laten zien.</p></div>
+      <div><b>3</b><h3>Nakijken</h3><p>Open <em>Digibord</em> en tik op een geel vakje om het antwoord te laten zien.</p></div>
     </section>`;
 }
 
@@ -189,14 +185,14 @@ async function toonGroep(g, vanaf) {
         <div class="acties">${x ? knoppenWeek(g, w.lesweek, false) : ""}</div>
       </div>`);
     } else if (lijst.length) {
-      lijst.push(`<div class="rij vak"><div class="wk">Week ${w.kw}</div><div>${esc(w.naam)}</div><div>${bereik(w)}</div></div>`);
+      lijst.push(`<div class="rij vak"><div class="wk">Week ${w.kw}</div><div class="naam">${I.zon}${esc(w.naam)}</div><div>${bereik(w)}</div></div>`);
     }
   }
 
   const opties = lesweken().map((w) => `<option value="${w.lesweek}" ${w.lesweek === focus ? "selected" : ""}>Week ${w.kw} · ${bereik(w)}</option>`).join("");
   kop.innerHTML = `
     <section class="groepkop"><div class="groepkop-in">
-      <div><h1>Groep ${g}</h1><div class="sub">${h.bezig ? "Deze week" : "Volgende week"}: week ${h.week.kw} · ${bereik(h.week)}</div></div>
+      <div class="titel"><span class="badge">${g}</span><div><h1>Groep ${g}</h1><div class="sub">${h.bezig ? "Deze week" : "Volgende week"}: week ${h.week.kw} · ${bereik(h.week)}</div></div></div>
       <div class="bladeren">
         <button class="knop klein" id="eerder" ${focus <= 1 ? "disabled" : ""}>${I.terug}Vorige</button>
         <button class="knop klein" id="nu" ${isNu ? "disabled" : ""}>Deze week</button>
@@ -212,7 +208,6 @@ async function toonGroep(g, vanaf) {
         <span class="etiket">${isNu ? (h.bezig ? "Deze week" : "Volgende week") : (focus < h.lesweek ? "Eerdere week" : "Later dit jaar")}</span>
         <h2>Week ${fw.kw} <span class="datum">· ${bereik(fw)}</span></h2>
         <p class="thema-groot">${fi ? esc(fi.thema) : "Dit blad is nog niet beschikbaar."}</p>
-        ${fi ? `<div class="chips">${fi.focus.map((f) => `<span>${f}</span>`).join("")}</div>` : ""}
         ${fw.vrije_dagen ? `<div class="vrij">Vrij: ${vrijTekst(fw)}. Er blijft een strookje over voor extra herhaling.</div>` : ""}
       </div>
       <div class="acties">${fi ? knoppenWeek(g, focus, true) : ""}</div>
@@ -281,7 +276,7 @@ async function toonBord(g, n, dag) {
         <button class="knop" id="scherm">${I.scherm}Volledig scherm</button>
         <a class="knop" href="#/groep/${g}/week/${w.kw}">Terug</a>
       </div>
-      <p class="tip">Tik op een vakje om het antwoord te zien. Toetsen: spatie = volgend antwoord, A = alles tonen, V = alles verbergen, ←/→ = vorige/volgende dag.</p>
+      <p class="tip">Tik op een geel vakje om het antwoord te zien. Toetsen: spatie = volgend antwoord, A = alles tonen, V = alles verbergen, ←/→ = vorige/volgende dag.</p>
       <details class="tekstantw"><summary>Antwoorden als tekst</summary><ol>${dd.antwoorden.map((a) => `<li>${esc(a)}</li>`).join("")}</ol></details>
     </div>`;
 
